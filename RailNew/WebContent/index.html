@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+
+<center>
+<form action="http://localhost:8080/RailNew/Bookingservlet">
+<h1>Ticket Booking</h1>
+From : <select id="from" name="from"></select>
+To : <select id="to" name="to"></select><button type="button" id="poptrain" onclick="populateTrains()">search</button><br><br>
+Train : <select id="train" name="train"></select><br><br>
+Class : <select id="class" name="class">
+    <option>GN</option>
+    <option>AC</option>
+    </select>
+</select>
+Date : <input type="date" name="datee"/><br><br>
+
+<div id="passengerTableDiv">
+<button type="button" onclick="addPassenger()">Add</button>
+<input type="submit" value="Book"/>
+</div>
+<table id="passengerTable">
+    <tr>
+        <th>Name</th>
+        <th>Age</th>
+        <th>Gender</th>
+    </tr>
+</table>
+</form>
+</center>
+
+<script>
+var xhr = new XMLHttpRequest();
+
+xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4 && xhr.status === 200) {
+        var data = JSON.parse(xhr.responseText);
+        var fromSelect = document.getElementById("from");
+        var toSelect = document.getElementById("to");
+
+        fromSelect.innerHTML = "";
+        toSelect.innerHTML = "";
+
+        var uniqueFromStations = [];
+        var uniqueToStations = [];
+
+        for (var i = 0; i < data.length; i++) {
+            var stationName = data[i].sname.trim();
+            if (!uniqueFromStations.includes(stationName)) {
+                uniqueFromStations.push(stationName);
+            }
+            if (!uniqueToStations.includes(stationName)) {
+                uniqueToStations.push(stationName);
+            }
+        }
+
+        for (var j = 0; j < uniqueFromStations.length; j++) {
+            var station = uniqueFromStations[j];
+            var option = document.createElement("option");
+            option.value = station;
+            option.textContent = station;
+            fromSelect.appendChild(option);
+        }
+
+        for (var k = 0; k < uniqueToStations.length; k++) {
+            var station = uniqueToStations[k];
+            var option = document.createElement("option");
+            option.value = station;
+            option.textContent = station;
+            toSelect.appendChild(option);
+        }
+    }
+};
+
+xhr.open("GET", "http://localhost:8080/RailNew/Stationservlet", true);
+xhr.send();
+
+function populateTrains() {
+    var from = document.getElementById("from");
+    var to = document.getElementById("to");
+    var fromstat = from.value;
+    var tostat = to.value;
+
+    var xhr2 = new XMLHttpRequest();
+
+    xhr2.onreadystatechange = function () {
+        if (xhr2.readyState === 4 && xhr2.status === 200) {
+            console.log(xhr2.responseText);
+
+            var data = JSON.parse(xhr2.responseText);
+            var trainSelect = document.getElementById("train");
+
+         
+            trainSelect.innerHTML = "";
+
+            var uniqueTrainStations = [];
+
+            for (var i = 0; i < data.length; i++) {
+                var stationName = data[i].trainName.trim();
+                if (!uniqueTrainStations.includes(stationName)) {
+                    uniqueTrainStations.push(stationName);
+                }
+            }
+
+            for (var j = 0; j < uniqueTrainStations.length; j++) {
+                var station = uniqueTrainStations[j];
+                var option = document.createElement("option");
+                option.value = station;
+                option.textContent = station;
+                trainSelect.appendChild(option);
+            }
+        }
+    };
+
+    xhr2.open("GET", `http://localhost:8080/RailNew/TrainServlet?from=${fromstat}&to=${tostat}`, true);
+    xhr2.send();
+}
+
+var passengerCount = 0;
+
+function addPassenger() {
+    passengerCount++;
+
+    var passengerTable = document.getElementById("passengerTable");
+
+    var nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.name = "names";
+    nameInput.placeholder = "Name";
+
+    var ageInput = document.createElement("input");
+    ageInput.type = "number";
+    ageInput.name = "age";
+    ageInput.placeholder = "Age";
+
+    var genderSelect = document.createElement("select");
+    genderSelect.name = "gender";
+    
+    var maleOption = document.createElement("option");
+    maleOption.value = "male";
+    maleOption.text = "Male";
+    genderSelect.appendChild(maleOption);
+
+    var femaleOption = document.createElement("option");
+    femaleOption.value = "female";
+    femaleOption.text = "Female";
+    genderSelect.appendChild(femaleOption);
+
+    var newRow = passengerTable.insertRow();
+    var nameCell = newRow.insertCell(0);
+    var ageCell = newRow.insertCell(1);
+    var genderCell = newRow.insertCell(2);
+
+    nameCell.appendChild(nameInput);
+    ageCell.appendChild(ageInput);
+    genderCell.appendChild(genderSelect);
+}
+
+
+</script>
+</body>
+</html>
